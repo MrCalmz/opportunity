@@ -64,19 +64,65 @@ jobs:
           mkdir -p site/data
           python - <<'PY'
           import json
+          import re
           from pathlib import Path
           from opportunity import search_jobs
 
-          report = search_jobs("", days=14, location=None, remote_only=False, max_results=5000)
+          # GitHub Pages is a static site, so visitors download this snapshot.
+          # Limit the client-side search index and remove enormous descriptions
+          # before publishing, which keeps the site practical on mobile data.
+          report = search_jobs("", days=14, location=None, remote_only=False, max_results=1200)
+          source_count = len(report.get("sources", []))
+          if source_count and report.get("audit", {}).get("source_errors", 0) >= source_count:
+              raise SystemExit("Every job source failed; refusing to publish an empty replacement snapshot.")
+
+          fields = (
+              "title", "company", "location", "job_url", "apply_url", "url",
+              "published_at", "published", "created_at", "employment_type",
+              "seniority", "remote_status", "work_mode", "work_arrangement",
+              "salary_min", "salary_max", "salary_currency", "salary_period",
+              "salary_text", "summary", "description", "tags", "source_id",
+              "source_name", "source_links", "eligible_countries", "excluded_countries",
+          )
+
+          def short_text(value, limit):
+              return re.sub(r"\\s+", " ", str(value or "")).strip()[:limit]
+
+          compact_results = []
+          for job in report.get("results", []):
+              item = {key: job[key] for key in fields if key in job and job[key] is not None}
+              if "summary" in item:
+                  item["summary"] = short_text(item["summary"], 400)
+              if "description" in item:
+                  item["description"] = short_text(item["description"], 450)
+              if isinstance(item.get("tags"), list):
+                  item["tags"] = [short_text(tag, 100) for tag in item["tags"][:10]]
+              if isinstance(item.get("source_links"), list):
+                  item["source_links"] = [
+                      {key: link[key] for key in ("source", "source_name", "source_id", "url") if key in link and link[key] is not None}
+                      for link in item["source_links"][:3]
+                      if isinstance(link, dict)
+                  ]
+              compact_results.append(item)
+
+          report["results"] = compact_results
+          report["results_count"] = len(compact_results)
+          report["max_results"] = 1200
+          report.pop("near_matches", None)
+          report["near_matches_count"] = 0
+
           output = Path("site/data/jobs.json")
           output.parent.mkdir(parents=True, exist_ok=True)
-          output.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-          print(f"Collected {report['results_count']} listings across {len(report['sources'])} configured sources.")
+          output.write_text(json.dumps(report, ensure_ascii=False, separators=(",", ":")) + "\\n", encoding="utf-8")
+          size = output.stat().st_size
+          print(f"Publishing {len(compact_results)} compact listings across {source_count} configured sources ({size:,} bytes).")
           for source in report["sources"]:
               suffix = " (cache)" if source.get("cache_used") else ""
               print(f"- {source['source_name']}: {source['status']}; {source['raw_jobs_count']} raw jobs{suffix}")
-          if report.get("audit", {}).get("source_errors", 0) >= len(report.get("sources", [])):
-              raise SystemExit("Every job source failed; refusing to publish an empty replacement snapshot.")
+          if not compact_results:
+              raise SystemExit("No job listings were collected; refusing to publish an empty replacement snapshot.")
+          if size > 5 * 1024 * 1024:
+              raise SystemExit(f"Snapshot is too large ({size:,} bytes); refusing to publish.")
           PY
 
       - name: Validate snapshot and website assets
@@ -103,6 +149,10 @@ jobs:
               raise SystemExit("Snapshot does not contain a results list")
           if not isinstance(report.get("sources"), list):
               raise SystemExit("Snapshot does not contain a sources list")
+          if not report["results"]:
+              raise SystemExit("Snapshot is empty; keeping the previous deployment")
+          if Path("site/data/jobs.json").stat().st_size > 5 * 1024 * 1024:
+              raise SystemExit("Snapshot exceeds the 5 MiB mobile-friendly size limit")
           if report.get("audit", {}).get("source_errors", 0) >= len(report.get("sources", [])):
               raise SystemExit("All source feeds failed; keeping the previous deployment")
           print(f"Snapshot validated: {len(report['results'])} jobs across {len(report['sources'])} feeds")
