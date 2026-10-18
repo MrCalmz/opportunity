@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://mrcalmz.github.io/opportunity/sitemap.xml

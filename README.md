@@ -6,7 +6,7 @@ A Python-first, local/Google Colab-friendly **multi-source job discovery tool**.
 
 ## Hosted website (GitHub Pages)
 
-This branch adds a polished, responsive website in the `site/` folder. It is plain HTML, CSS, and JavaScript, so no frontend build system or paid hosting is required. The browser searches and filters a generated job snapshot; it does not call every provider API directly.
+This branch adds a polished, responsive website in the `site/` folder. It is plain HTML, CSS, and JavaScript, so no frontend build system or paid hosting is required. Visitors can search by keyword and location, filter by posting age, work mode, employment type, experience level, job source and disclosed salary, save listings in their browser, and export filtered results to CSV. The browser searches a generated job snapshot; it does not call every provider API directly. The page also includes a sitemap and robots file for search-engine discovery.
 
 The `Refresh listings & deploy website` GitHub Actions workflow runs the Python tests, collects listings published in the last 14 days, writes `site/data/jobs.json`, validates the website assets, and deploys the static site with GitHub Pages. A push to this branch triggers the workflow automatically. The six-hour schedule only runs after the workflow is on the repository's default branch; GitHub runs scheduled workflows from the default branch, and manual dispatch also requires the workflow file to exist on that branch.
 
@@ -24,7 +24,7 @@ After a successful first deployment, the expected project site URL is <https://m
 Requires Python 3.10+ (Python 3.11+ recommended). The core search uses only the Python standard library—no package installation is required.
 
 ```bash
-git clone https://github.com/AgentCalmz/opportunity.git
+git clone https://github.com/MrCalmz/opportunity.git
 cd opportunity
 # Search data-entry jobs posted in the last 5 days
 python opportunity.py "data entry" --days 5
@@ -79,7 +79,7 @@ python -m py_compile opportunity.py tests/test_opportunity.py
 git pull --ff-only origin main
 ```
 
-On Windows, use `py` instead of `python` if that is the command that works on your computer (for example, `py opportunity.py --help`). Run `git clone https://github.com/AgentCalmz/opportunity.git` only once; for later updates, first `cd opportunity` and then use `git pull --ff-only origin main`. To use the CLI you need Python 3.10+ and Git installed.
+On Windows, use `py` instead of `python` if that is the command that works on your computer (for example, `py opportunity.py --help`). Run `git clone https://github.com/MrCalmz/opportunity.git` only once; for later updates, first `cd opportunity` and then use `git pull --ff-only origin main`. To use the CLI you need Python 3.10+ and Git installed.
 
 Date filters use the listing's publication date. If the source does not give a parseable date, the listing is excluded when a timeframe is requested and counted in the audit instead of being falsely labelled recent. A date filter cannot retrieve older jobs if a provider does not retain them.
 
@@ -88,7 +88,7 @@ Date filters use the listing's publication date. If the source does not give a p
 Open `opportunity_colab.ipynb` in Colab, or run these cells in a new notebook:
 
 ```python
-!git clone https://github.com/AgentCalmz/opportunity.git
+!git clone https://github.com/MrCalmz/opportunity.git
 %cd opportunity
 
 from opportunity import search_jobs, print_report

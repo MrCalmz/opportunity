@@ -9,6 +9,8 @@
   const timeFilter = $("#time-filter");
   const modeFilter = $("#mode-filter");
   const employmentFilter = $("#employment-filter");
+  const seniorityFilter = $("#seniority-filter");
+  const sourceFilter = $("#source-filter");
   const salaryFilter = $("#salary-filter");
   const sortFilter = $("#sort-filter");
   const refreshButton = $("#refresh-button");
@@ -103,6 +105,28 @@
     return low + (low === high ? "" : "–" + high) + currency + period;
   };
 
+  const sourceFits = (job, wanted) => {
+    if (!wanted || wanted === "any") return true;
+    const linkedSources = Array.isArray(job.source_links) ? job.source_links.flatMap((link) => [link.source, link.source_name, link.source_id]) : [];
+    return [job.source_name, job.source_id, ...linkedSources]
+      .some((value) => normalized(value) === wanted);
+  };
+
+  const seniorityFits = (job, wanted) => {
+    if (!wanted || wanted === "any") return true;
+    const level = normalized(job.seniority);
+    if (wanted === "unknown") return !level || /not specified|unknown|unspecified/.test(level);
+    if (!level || /not specified|unknown|unspecified/.test(level)) return false;
+    const patterns = {
+      entry: /(^| )(entry|junior|intern|internship|graduate|trainee|apprentice)( |$)/,
+      associate: /(^| )associate( |$)/,
+      mid: /(^| )(mid|mid level|intermediate|experienced)( |$)/,
+      senior: /(^| )(senior|sr|staff|principal)( |$)/,
+      lead: /(^| )(lead|manager|director|head|chief|executive)( |$)/
+    };
+    return Boolean(patterns[wanted] && patterns[wanted].test(level));
+  };
+
   const allText = (job) => normalized([
     job.title, job.company, job.location, job.summary, job.description,
     job.employment_type, job.seniority, job.source_name,
@@ -166,6 +190,8 @@
     const days = Number(timeFilter.value) || 14;
     const mode = modeFilter.value;
     const employmentWanted = normalized(employmentFilter.value);
+    const seniorityWanted = seniorityFilter.value;
+    const sourceWanted = sourceFilter.value;
     const salaryWanted = salaryFilter.value;
     let jobs = allJobs.map((job) => ({ job, score: queryScore(job, query) }));
     jobs = jobs.filter(({ job, score }) => {
@@ -175,6 +201,8 @@
       if (!ageFits(job, days)) return false;
       if (mode !== "any" && displayMode(job) !== mode) return false;
       if (employmentWanted !== "any" && !normalized(job.employment_type).includes(employmentWanted)) return false;
+      if (seniorityWanted !== "any" && !seniorityFits(job, seniorityWanted)) return false;
+      if (sourceWanted !== "any" && !sourceFits(job, sourceWanted)) return false;
       if (salaryWanted === "disclosed" && !salaryLabel(job)) return false;
       return true;
     });
@@ -276,9 +304,27 @@
     });
   };
 
+  const renderSourceOptions = () => {
+    const options = new Map();
+    const addOption = (value) => {
+      const label = String(value || "").trim();
+      const key = normalized(label);
+      if (key && !options.has(key)) options.set(key, label);
+    };
+    (snapshot && Array.isArray(snapshot.sources) ? snapshot.sources : []).forEach((source) => addOption(source.source_name || source.source_id));
+    allJobs.forEach((job) => {
+      addOption(job.source_name || job.source_id);
+      if (Array.isArray(job.source_links)) job.source_links.forEach((link) => addOption(link.source || link.source_name || link.source_id));
+    });
+    const selected = sourceFilter.value;
+    const sorted = Array.from(options.entries()).sort((a, b) => a[1].localeCompare(b[1]));
+    sourceFilter.innerHTML = '<option value="any">All sources</option>' + sorted.map(([key, label]) => '<option value="' + escapeHtml(key) + '">' + escapeHtml(label) + '</option>').join("");
+    sourceFilter.value = options.has(selected) ? selected : "any";
+  };
+
   const renderSources = () => {
     const sources = (snapshot && Array.isArray(snapshot.sources)) ? snapshot.sources : [];
-    $("#metric-sources").textContent = String(sources.length || 8);
+    $("#metric-sources").textContent = String(sources.length);
     const failed = sources.filter((source) => source.status === "error").length;
     const partial = sources.filter((source) => source.status === "partial").length;
     const ok = sources.filter((source) => source.status === "ok").length;
@@ -357,6 +403,7 @@
       if (!response.ok) throw new Error("Snapshot request failed (" + response.status + ")");
       snapshot = await response.json();
       allJobs = Array.isArray(snapshot.results) ? snapshot.results : [];
+      renderSourceOptions();
       renderFreshness();
       renderSources();
       renderJobs(true);
@@ -385,6 +432,8 @@
     timeFilter.value = "14";
     modeFilter.value = "any";
     employmentFilter.value = "any";
+    seniorityFilter.value = "any";
+    sourceFilter.value = "any";
     salaryFilter.value = "any";
     sortFilter.value = "newest";
     document.querySelectorAll(".quick-chip").forEach((chip) => chip.classList.remove("active"));
@@ -411,7 +460,8 @@
     renderJobs(true);
     $("#results-heading").scrollIntoView({ behavior: "smooth", block: "center" });
   }));
-  [locationInput, timeFilter, modeFilter, employmentFilter, salaryFilter, sortFilter].forEach((element) => element.addEventListener("change", () => renderJobs(true)));
+  [locationInput, timeFilter, modeFilter, employmentFilter, seniorityFilter, sourceFilter, salaryFilter, sortFilter].forEach((element) => element.addEventListener("change", () => renderJobs(true)));
+  $("#reset-filters").addEventListener("click", resetFilters);
   $("#saved-filter").addEventListener("click", () => { savedOnly = !savedOnly; renderJobs(true); });
   $("#export-button").addEventListener("click", exportCsv);
   refreshButton.addEventListener("click", () => loadSnapshot(true));

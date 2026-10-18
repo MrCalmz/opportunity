@@ -9,6 +9,7 @@
   <meta property="og:description" content="One workspace to scan opportunities across public job feeds. Less tab-hopping. More leads worth a closer look.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://mrcalmz.github.io/opportunity/">
+  <link rel="canonical" href="https://mrcalmz.github.io/opportunity/">
   <meta name="twitter:card" content="summary">
   <title>Opportunity — Your next move starts here</title>
   <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml">
@@ -71,7 +72,7 @@
       <section class="metrics-strip" aria-label="Platform highlights">
         <div class="metric"><span class="metric-number" id="metric-listings">—</span><span class="metric-label">Listings in this snapshot</span></div>
         <div class="metric-divider"></div>
-        <div class="metric"><span class="metric-number" id="metric-sources">8</span><span class="metric-label">Connected public feeds</span></div>
+        <div class="metric"><span class="metric-number" id="metric-sources">—</span><span class="metric-label">Connected public feeds</span></div>
         <div class="metric-divider"></div>
         <div class="metric"><span class="metric-number">14 <small>days</small></span><span class="metric-label">Default collection window</span></div>
         <div class="metric-divider"></div>
@@ -142,6 +143,24 @@
               </select>
             </div>
             <div class="filter-field">
+              <label for="seniority-filter">EXPERIENCE LEVEL</label>
+              <select id="seniority-filter">
+                <option value="any">All experience levels</option>
+                <option value="entry">Entry level / junior</option>
+                <option value="associate">Associate</option>
+                <option value="mid">Mid-level</option>
+                <option value="senior">Senior / principal</option>
+                <option value="lead">Lead / management</option>
+                <option value="unknown">Not specified</option>
+              </select>
+            </div>
+            <div class="filter-field">
+              <label for="source-filter">JOB SOURCE</label>
+              <select id="source-filter">
+                <option value="any">All sources</option>
+              </select>
+            </div>
+            <div class="filter-field">
               <label for="salary-filter">SALARY</label>
               <select id="salary-filter">
                 <option value="any">Any salary status</option>
@@ -149,6 +168,10 @@
               </select>
             </div>
             <button class="search-button" type="submit"><span>Find opportunities</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13m-5-5 5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          </div>
+          <div class="search-panel-footer">
+            <p>Search a refreshed snapshot; open the original listing to verify current availability and eligibility.</p>
+            <button type="button" class="clear-filters-button" id="reset-filters">Clear all filters</button>
           </div>
         </form>
 

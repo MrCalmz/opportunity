@@ -9,6 +9,9 @@ on:
       - "opportunity.py"
       - "tests/**"
       - "site/**"
+      - "requirements.txt"
+      - "pyproject.toml"
+      - ".env.example"
       - ".github/workflows/deploy-pages.yml"
   workflow_dispatch:
   schedule:
@@ -88,6 +91,8 @@ jobs:
               Path("site/assets/app.js"),
               Path("site/assets/favicon.svg"),
               Path("site/data/jobs.json"),
+              Path("site/robots.txt"),
+              Path("site/sitemap.xml"),
           ]
           missing = [str(path) for path in required if not path.is_file()]
           if missing:
@@ -109,12 +114,18 @@ jobs:
                   raise SystemExit("Missing static asset reference: " + asset)
           if './data/jobs.json' not in js:
               raise SystemExit("Frontend does not request the snapshot JSON")
-          for control in ('id="employment-filter"', 'id="salary-filter"'):
+          for control in ('id="employment-filter"', 'id="salary-filter"', 'id="seniority-filter"', 'id="source-filter"', 'id="reset-filters"'):
               if control not in html:
                   raise SystemExit("Missing expected search control: " + control)
-          for control in ('employmentFilter', 'salaryFilter'):
+          for control in ('employmentFilter', 'salaryFilter', 'seniorityFilter', 'sourceFilter', 'seniorityFits', 'sourceFits', 'resetFilters'):
               if control not in js:
                   raise SystemExit("Missing filter behavior: " + control)
+          robots = Path("site/robots.txt").read_text(encoding="utf-8")
+          sitemap = Path("site/sitemap.xml").read_text(encoding="utf-8")
+          if "https://mrcalmz.github.io/opportunity/sitemap.xml" not in robots:
+              raise SystemExit("robots.txt is missing the sitemap location")
+          if "<loc>https://mrcalmz.github.io/opportunity/</loc>" not in sitemap:
+              raise SystemExit("sitemap.xml is missing the canonical website URL")
           PY
           node --check site/assets/app.js
 
