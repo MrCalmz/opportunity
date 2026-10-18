@@ -8,6 +8,8 @@
   const locationInput = $("#location-input");
   const timeFilter = $("#time-filter");
   const modeFilter = $("#mode-filter");
+  const employmentFilter = $("#employment-filter");
+  const salaryFilter = $("#salary-filter");
   const sortFilter = $("#sort-filter");
   const refreshButton = $("#refresh-button");
   const clearQuery = $("#clear-query");
@@ -129,6 +131,11 @@
     else if (words.every((word) => summary.includes(word))) score += 10;
     if (description.includes(q)) score += 14;
     else if (words.every((word) => description.includes(word))) score += 7;
+    const employment = normalized(job.employment_type);
+    const seniority = normalized(job.seniority);
+    if (employment && employment.includes(q)) score += 8;
+    if (seniority && seniority.includes(q)) score += 8;
+    if (allText(job).includes(q)) score += 3;
     return score;
   };
 
@@ -158,6 +165,8 @@
     const location = locationInput.value.trim();
     const days = Number(timeFilter.value) || 14;
     const mode = modeFilter.value;
+    const employmentWanted = normalized(employmentFilter.value);
+    const salaryWanted = salaryFilter.value;
     let jobs = allJobs.map((job) => ({ job, score: queryScore(job, query) }));
     jobs = jobs.filter(({ job, score }) => {
       if (query && score <= 0) return false;
@@ -165,6 +174,8 @@
       if (!locationFits(job, location)) return false;
       if (!ageFits(job, days)) return false;
       if (mode !== "any" && displayMode(job) !== mode) return false;
+      if (employmentWanted !== "any" && !normalized(job.employment_type).includes(employmentWanted)) return false;
+      if (salaryWanted === "disclosed" && !salaryLabel(job)) return false;
       return true;
     });
     jobs.sort((a, b) => {
@@ -373,6 +384,8 @@
     locationInput.value = "";
     timeFilter.value = "14";
     modeFilter.value = "any";
+    employmentFilter.value = "any";
+    salaryFilter.value = "any";
     sortFilter.value = "newest";
     document.querySelectorAll(".quick-chip").forEach((chip) => chip.classList.remove("active"));
     savedOnly = false;
@@ -398,7 +411,7 @@
     renderJobs(true);
     $("#results-heading").scrollIntoView({ behavior: "smooth", block: "center" });
   }));
-  [locationInput, timeFilter, modeFilter, sortFilter].forEach((element) => element.addEventListener("change", () => renderJobs(true)));
+  [locationInput, timeFilter, modeFilter, employmentFilter, salaryFilter, sortFilter].forEach((element) => element.addEventListener("change", () => renderJobs(true)));
   $("#saved-filter").addEventListener("click", () => { savedOnly = !savedOnly; renderJobs(true); });
   $("#export-button").addEventListener("click", exportCsv);
   refreshButton.addEventListener("click", () => loadSnapshot(true));
