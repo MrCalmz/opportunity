@@ -30,8 +30,12 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Check out repository
+      # Keep the app code on its feature branch. This also lets a scheduled
+      # copy of this workflow on the default branch deploy the same feature branch.
+      - name: Check out website branch
         uses: actions/checkout@v6
+        with:
+          ref: feature/pitchable-github-pages-site
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -42,9 +46,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .opportunity-cache
-          key: opportunity-cache-${{ runner.os }}-${{ github.ref_name }}-${{ github.run_id }}
+          key: opportunity-cache-${{ runner.os }}-${{ github.run_id }}
           restore-keys: |
-            opportunity-cache-${{ runner.os }}-${{ github.ref_name }}-
+            opportunity-cache-${{ runner.os }}-
 
       - name: Compile Python source
         run: python -m py_compile opportunity.py tests/test_opportunity.py
@@ -105,6 +109,12 @@ jobs:
                   raise SystemExit("Missing static asset reference: " + asset)
           if './data/jobs.json' not in js:
               raise SystemExit("Frontend does not request the snapshot JSON")
+          for control in ('id="employment-filter"', 'id="salary-filter"'):
+              if control not in html:
+                  raise SystemExit("Missing expected search control: " + control)
+          for control in ('employmentFilter', 'salaryFilter'):
+              if control not in js:
+                  raise SystemExit("Missing filter behavior: " + control)
           PY
           node --check site/assets/app.js
 
