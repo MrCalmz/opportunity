@@ -86,7 +86,7 @@ jobs:
           )
 
           def short_text(value, limit):
-              return re.sub(r"\\s+", " ", str(value or "")).strip()[:limit]
+              return re.sub(r"\s+", " ", str(value or "")).strip()[:limit]
 
           compact_results = []
           for job in report.get("results", []):
@@ -113,7 +113,7 @@ jobs:
 
           output = Path("site/data/jobs.json")
           output.parent.mkdir(parents=True, exist_ok=True)
-          output.write_text(json.dumps(report, ensure_ascii=False, separators=(",", ":")) + "\\n", encoding="utf-8")
+          output.write_text(json.dumps(report, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
           size = output.stat().st_size
           print(f"Publishing {len(compact_results)} compact listings across {source_count} configured sources ({size:,} bytes).")
           for source in report["sources"]:
