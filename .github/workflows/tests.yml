@@ -2,14 +2,14 @@ name: Python tests
 
 on:
   push:
-    branches: [main, feature/pitchable-github-pages-site]
+    branches: [main, static-main]
   pull_request:
-    branches: [main]
+    branches: [main, static-main]
   workflow_dispatch:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         python-version: ["3.10", "3.11", "3.12"]

@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - feature/pitchable-github-pages-site
+      - static-main
     paths:
       - "opportunity.py"
       - "tests/**"
@@ -28,7 +28,7 @@ concurrency:
 
 jobs:
   build-and-deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -38,7 +38,7 @@ jobs:
       - name: Check out website branch
         uses: actions/checkout@v6
         with:
-          ref: feature/pitchable-github-pages-site
+          ref: static-main
 
       - name: Set up Python
         uses: actions/setup-python@v6
