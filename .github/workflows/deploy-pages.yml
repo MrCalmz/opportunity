@@ -15,7 +15,7 @@ on:
       - ".github/workflows/deploy-pages.yml"
   workflow_dispatch:
   schedule:
-    - cron: "17 */6 * * *"
+    - cron: "17 */3 * * *"
 
 permissions:
   contents: read
@@ -167,9 +167,9 @@ jobs:
           for control in ('id="employment-filter"', 'id="salary-filter"', 'id="seniority-filter"', 'id="source-filter"', 'id="reset-filters"'):
               if control not in html:
                   raise SystemExit("Missing expected search control: " + control)
-          for control in ('employmentFilter', 'salaryFilter', 'seniorityFilter', 'sourceFilter', 'seniorityFits', 'sourceFits', 'resetFilters'):
+          for control in ('employmentFilter', 'salaryFilter', 'seniorityFilter', 'sourceFilter', 'seniorityFits', 'sourceFits', 'resetFilters', 'salary-undisclosed', 'Salary: '):
               if control not in js:
-                  raise SystemExit("Missing filter behavior: " + control)
+                  raise SystemExit("Missing filter or salary-label behavior: " + control)
           robots = Path("site/robots.txt").read_text(encoding="utf-8")
           sitemap = Path("site/sitemap.xml").read_text(encoding="utf-8")
           if "https://mrcalmz.github.io/opportunity/sitemap.xml" not in robots:

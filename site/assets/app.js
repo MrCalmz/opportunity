@@ -237,7 +237,9 @@
     const relevance = queryInput.value.trim() ? '<span class="badge relevance">Search signal ' + Math.min(100, Math.round(score)) + '</span>' : "";
     const titleLink = jobUrl === "#" ? title : '<a href="' + escapeHtml(jobUrl) + '" target="_blank" rel="noopener noreferrer">' + title + '</a>';
     const applyLink = applyUrl === "#" ? "" : '<a class="apply-link" href="' + escapeHtml(applyUrl) + '" target="_blank" rel="noopener noreferrer">View opportunity <span>↗</span></a>';
-    const salaryFact = salary ? '<span class="job-fact"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18m5-14H9.5a3 3 0 0 0 0 6h5a3 3 0 0 1 0 6H6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>' + escapeHtml(salary) + '</span>' : "";
+    const salaryDisplay = salary || "Not disclosed";
+    const salaryStatusClass = salary ? " salary-fact" : " salary-fact salary-undisclosed";
+    const salaryFact = '<span class="job-fact' + salaryStatusClass + '" aria-label="Salary: ' + escapeHtml(salaryDisplay) + '"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.586 7.586 7.172 3H17l4 4-9.828 9.828-8.586-8.586Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="14.5" cy="6.5" r="1" fill="currentColor"/></svg><span>Salary: ' + escapeHtml(salaryDisplay) + '</span></span>';
     const employmentFact = employment ? '<span class="job-fact"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="7" width="17" height="13.5" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M8 7V4h8v3M3.5 12h17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>' + escapeHtml(employment) + '</span>' : "";
     const tagsHtml = tags.length ? '<div class="job-tags-list">' + tags.map((tag) => '<span class="badge">' + escapeHtml(tag) + '</span>').join("") + '</div>' : "";
     return '<article class="job-card" style="animation-delay:' + Math.min(index * 35, 210) + 'ms">' +
