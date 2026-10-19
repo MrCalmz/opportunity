@@ -536,3 +536,35 @@ img, svg { max-width: 100%; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+
+
+/* Final UI polish */
+.topbar-actions { justify-content: flex-end; }
+.refresh-pill { box-shadow: 0 3px 10px rgba(28,47,32,.035); }
+.job-card { position: relative; overflow: hidden; }
+.job-card::before {
+  position: absolute; top: 16px; bottom: 16px; left: 0; width: 3px;
+  border-radius: 0 4px 4px 0; background: linear-gradient(180deg,#a7dc67,#4d9b52);
+  content: ""; opacity: 0; transform: scaleY(.85); transform-origin: center;
+  transition: opacity .18s ease, transform .18s ease;
+}
+.job-card:hover::before { opacity: 1; transform: scaleY(1); }
+.source-footnote {
+  display: flex; align-items: flex-start; gap: 9px; margin-top: 12px; padding-top: 13px;
+  border-top: 1px solid #edf0e9; color: #7a8678; font-size: 9px; line-height: 1.65;
+}
+.source-footnote-icon {
+  width: 21px; height: 21px; display: grid; place-items: center; flex: 0 0 21px;
+  border: 1px solid #dfe9d7; border-radius: 7px; background: #f1f7eb; color: #47783a;
+  font-size: 13px; font-weight: 700;
+}
+.footer-right { width: auto; }
+@media (hover: none) {
+  .job-card:hover { transform: none; box-shadow: 0 5px 18px rgba(28,47,32,.025); }
+  .job-card:hover::before { opacity: 0; }
+}
+@media (max-width: 660px) {
+  .topbar-actions { gap: 8px; }
+  .footer-right { width: 100%; }
+  .job-card::before { top: 12px; bottom: 12px; }
+}
